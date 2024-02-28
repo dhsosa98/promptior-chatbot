@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A simple chatbot based on Langchain's using RAG architecture">
+    <meta name="author" content="Langchain">
+    <meta name="keywords" content="Chatbot, RAG, Langchain">
+    <link rel="icon" href="favicon.png" type="image/x-icon">
+    <title>Promptior Chatbot</title>
+</head>
+<style>
+    body {
+        background: rgb(14, 17, 23);
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+        font-family: "Source Sans Pro", sans-serif;
+        min-height: 100vh;
+        height: 100vh;
+        line-height: 1.6;
+    }
+    .main {
+        width: 100%;
+        height: 100%;
+        padding: 2rem 1rem 1rem;
+        max-width: 46rem;
+        color: rgb(250, 250, 250);
+        margin: 0px auto;
+        position: relative;
+    }
+    h1 {
+        font-weight: 700;
+        font-size: calc(1.4rem + 1.8vw);
+    }
+    p {
+        padding: 0px;
+        font-size: 1.1rem;
+        font-weight: 400;
+    }
+    .messages-section {
+        width: 100%;
+        height: 60%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    .prompt-section {
+        position: sticky;
+        left: 0px;
+        bottom: 0px;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+    }
+    input {
+        width: 100%;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        padding-left: 1rem;
+        margin: 0.5rem 0px;
+        border-radius: 0.5rem;
+        background-color: rgb(38, 39, 48);
+        border: none;
+        font-size: 16px;
+        color: rgb(250, 250, 250);
+    }
+    button {
+        padding: 1rem;
+        margin: 0.5rem 0px;
+        border-radius: 0.5rem;
+        background-color: rgb(38, 39, 48);
+        border: none;
+        color: rgb(250, 250, 250);
+        font-size: 16px;
+        cursor: pointer;
+    
+    }
+    .message-container {
+        background-color: rgb(38, 39, 48);
+        padding: 1rem;
+        margin: 0.5rem 0px;
+        border-radius: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        width: 100%;
+    }
+    .message-container.bot{
+        background-color: transparent
+    }
+    svg {
+        width: 24px;
+        height: 24px;
+        color: white;
+    }
+    .icon{
+        width: fit-content;
+        padding:0.5rem 0.5rem 0.1rem 0.5rem;
+        border-radius: 0.5rem;
+    }
+    .user-icon {
+        background-color: rgb(37, 48, 147);
+    }
+    .bot-icon {
+        background-color: rgb(0, 200, 83);
+    }
+    .message {
+        margin-left: 16px;
+    }
+</style>
+<body>
+    <main class="main">
+        <div>
+            <h1>Promptior Chatbot</h1>
+            <p>This is a simple chatbot based on Langchain's using RAG architecture</p>
+        </div>
+        <div class="messages-section">
+
+        </div>
+        <form class="prompt-section">
+            <input type="text" id="message" placeholder="Enter your message" />
+            <button id="send-message" type="send">Send</button>
+        </form>
+    </main>
+
+    <div class="icon user-icon" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor" xmlns="http://www.w3.org/2000/svg" color="inherit" class=""><path fill="none" d="M0 0h24v24H0V0z"></path><path d="M10.25 13a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zM15 11.75a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zm7 .25c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10zM10.66 4.12C12.06 6.44 14.6 8 17.5 8c.46 0 .91-.05 1.34-.12C17.44 5.56 14.9 4 12 4c-.46 0-.91.05-1.34.12zM4.42 9.47a8.046 8.046 0 003.66-4.44 8.046 8.046 0 00-3.66 4.44zM20 12c0-.78-.12-1.53-.33-2.24-.7.15-1.42.24-2.17.24a10 10 0 01-7.76-3.69A10.016 10.016 0 014 11.86c.01.04 0 .09 0 .14 0 4.41 3.59 8 8 8s8-3.59 8-8z"></path></svg>
+    </div>
+    <div class="icon bot-icon" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor" xmlns="http://www.w3.org/2000/svg" color="inherit" class=""><rect width="24" height="24" fill="none"></rect><path d="M20 9V7c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S9 3.34 9 5H6c-1.1 0-2 .9-2 2v2c-1.66 0-3 1.34-3 3s1.34 3 3 3v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c1.66 0 3-1.34 3-3s-1.34-3-3-3zm-2 10H6V7h12v12zm-9-6c-.83 0-1.5-.67-1.5-1.5S8.17 10 9 10s1.5.67 1.5 1.5S9.83 13 9 13zm7.5-1.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5.67-1.5 1.5-1.5 1.5.67 1.5 1.5zM8 15h8v2H8v-2z"></path></svg>
+    </div>
+    <script>
+        const messagesSection = document.querySelector('.messages-section');
+        const messageInput = document.querySelector('#message');
+        const form = document.querySelector('form');
+        const userIcon = document.querySelector('.icon.user-icon');
+        const botIcon = document.querySelector('.icon.bot-icon');
+
+        let loading = false;
+
+        const createUserMessage = (message) => {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container');
+            const messageElement = document.createElement('p');
+            const cloneUserIcon = userIcon.cloneNode(true);
+            cloneUserIcon.removeAttribute('hidden');
+            messageContainer.appendChild(cloneUserIcon);
+            messageContainer.appendChild(messageElement);
+            messageElement.classList.add('message');
+            messageElement.textContent = message;
+            messagesSection.appendChild(messageContainer);
+        };
+
+        const createBotMessage = (message) => {
+            if (!loading) {
+                const messageContainers = document.querySelector('.message-container.loading');
+                const messageElement = messageContainers.querySelector('.message');
+                messageElement.textContent = message;
+                messageContainers.classList.remove('loading');
+                return;
+            }
+            const messageContainer = document.createElement('div');
+            messageContainer?.classList?.add('message-container', 'bot', loading ? 'loading' : '');
+            const messageElement = document.createElement('p');
+            const cloneBotIcon = botIcon.cloneNode(true);
+            cloneBotIcon.removeAttribute('hidden');
+            messageContainer.appendChild(cloneBotIcon);
+            messageContainer.appendChild(messageElement);
+            messageElement?.classList?.add('message');
+            messageElement.textContent = message;
+            messagesSection.appendChild(messageContainer);
+        };
+
+        const BASE_URL = '/chat';
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInput.value;
+            createUserMessage(message);
+            loading = true;
+            createBotMessage('...');
+            fetch(BASE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: message })
+            }).then(
+                response => response.json()
+            ).then(data => {
+                loading = false;
+                data = data['answer']
+                createBotMessage(data);
+            }).catch(error => {
+                loading = false;
+                createBotMessage('An error occurred');
+            }).finally(() => {
+                loading = false;
+            });
+            const input = document.querySelector('input');
+            input.value = '';
+        });
+    </script>
+</body>
+</html>
